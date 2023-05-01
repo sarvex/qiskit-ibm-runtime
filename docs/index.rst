@@ -97,7 +97,6 @@ Next steps
     Update parameter values while running <migrate/migrate-update-parm>
     Work with updated Qiskit algorithms <migrate/migrate-qiskit-alg>
     Algorithm tuning options (shots, transpilation, error mitigation) <migrate/migrate-tuning> 
-    Use Qiskit Runtime without primitives <migrate/migrate-setup>
 
 .. toctree::
    :maxdepth: 1
