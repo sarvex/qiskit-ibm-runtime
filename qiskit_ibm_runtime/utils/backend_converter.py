@@ -90,22 +90,17 @@ def convert_to_target(
                     gate_props["duration"] = apply_prefix(param.value, param.unit)
             gates[name][qubits] = InstructionProperties(**gate_props)
         for gate, props in gates.items():
-            if gate in name_mapping:
-                inst = name_mapping.get(gate)
-            else:
-                inst = custom_gates[gate]
+            inst = name_mapping.get(gate, custom_gates[gate])
             target.add_instruction(inst, props)
-        # Create measurement instructions:
-        measure_props = {}
-        for qubit, _ in enumerate(properties.qubits):
-            if not properties.is_qubit_operational(qubit):
-                continue
-            measure_props[(qubit,)] = InstructionProperties(
+        measure_props = {
+            (qubit,): InstructionProperties(
                 duration=properties.readout_length(qubit),
                 error=properties.readout_error(qubit),
             )
+            for qubit, _ in enumerate(properties.qubits)
+            if properties.is_qubit_operational(qubit)
+        }
         target.add_instruction(Measure(), measure_props)
-    # Parse from configuration because properties doesn't exist
     else:
         target = Target(num_qubits=configuration.n_qubits)
         for gate in configuration.gates:
@@ -115,10 +110,10 @@ def convert_to_target(
                 if hasattr(gate, "coupling_map")
                 else {None: None}
             )
-            gate_len = len(gate.coupling_map[0]) if hasattr(gate, "coupling_map") else 0
             if name in name_mapping:
                 target.add_instruction(name_mapping[name], gate_props)
             else:
+                gate_len = len(gate.coupling_map[0]) if hasattr(gate, "coupling_map") else 0
                 custom_gate = Gate(name, gate_len, [])
                 target.add_instruction(custom_gate, gate_props)
         target.add_instruction(Measure())
@@ -148,12 +143,9 @@ def convert_to_target(
                         qarg = (qarg,)
                     if inst == "measure":
                         for qubit in qarg:
-                            if qubit in faulty_qubits:
-                                continue
-                            target[inst][(qubit,)].calibration = sched
-                    else:
-                        if any(qubit in faulty_qubits for qubit in qarg):
-                            continue
+                            if qubit not in faulty_qubits:
+                                target[inst][(qubit,)].calibration = sched
+                    elif all(qubit not in faulty_qubits for qubit in qarg):
                         target[inst][qarg].calibration = sched
     if "delay" not in target:
         target.add_instruction(

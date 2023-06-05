@@ -113,13 +113,13 @@ class FakeRuntimeService(QiskitRuntimeService):
                         backend_name=self.DEFAULT_COMMON_BACKEND, hgps=hgps
                     )
                 ]
-                for idx, hgp in enumerate(hgps):
-                    self._backend_specs.append(
-                        FakeApiBackendSpecs(
-                            backend_name=self.DEFAULT_UNIQUE_BACKEND_PREFIX + str(idx),
-                            hgps=[hgp],
-                        )
+                self._backend_specs.extend(
+                    FakeApiBackendSpecs(
+                        backend_name=self.DEFAULT_UNIQUE_BACKEND_PREFIX + str(idx),
+                        hgps=[hgp],
                     )
+                    for idx, hgp in enumerate(hgps)
+                )
             self._fake_runtime_client = BaseFakeRuntimeClient(
                 backend_specs=self._backend_specs, channel="ibm_quantum"
             )

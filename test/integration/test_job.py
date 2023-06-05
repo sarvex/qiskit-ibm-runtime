@@ -279,8 +279,7 @@ class TestIntegrationJob(IBMIntegrationJobTestCase):
         with self.assertLogs("qiskit_ibm_runtime", "WARN"):
             job.logs()
         job.wait_for_final_state()
-        job_logs = job.logs()
-        if job_logs:
+        if job_logs := job.logs():
             self.assertIn("INFO Pass", job_logs)
 
     @run_integration_test

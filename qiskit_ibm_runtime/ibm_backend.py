@@ -214,9 +214,7 @@ class IBMBackend(Backend):
             return self._configuration.__getattribute__(name)
         except AttributeError:
             raise AttributeError(
-                "'{}' object has no attribute '{}'".format(
-                    self.__class__.__name__, name
-                )
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
             )
 
     def _get_properties(self, datetime: Optional[python_datetime] = None) -> None:
@@ -224,10 +222,9 @@ class IBMBackend(Backend):
         if datetime:
             datetime = local_to_utc(datetime)
         if not self._properties:
-            api_properties = self._api_client.backend_properties(
+            if api_properties := self._api_client.backend_properties(
                 self.name, datetime=datetime
-            )
-            if api_properties:
+            ):
                 backend_properties = properties_from_server_data(api_properties)
                 self._properties = backend_properties
 
@@ -236,8 +233,7 @@ class IBMBackend(Backend):
         if not self._defaults and isinstance(
             self._configuration, PulseBackendConfiguration
         ):
-            api_defaults = self._api_client.backend_pulse_defaults(self.name)
-            if api_defaults:
+            if api_defaults := self._api_client.backend_pulse_defaults(self.name):
                 self._defaults = defaults_from_server_data(api_defaults)
 
     def _convert_to_target(self) -> None:
@@ -367,8 +363,7 @@ class IBMBackend(Backend):
             return None
         if not isinstance(refresh, bool):
             raise TypeError(
-                "The 'refresh' argument needs to be a boolean. "
-                "{} is of type {}".format(refresh, type(refresh))
+                f"The 'refresh' argument needs to be a boolean. {refresh} is of type {type(refresh)}"
             )
         if datetime:
             if not isinstance(datetime, python_datetime):
@@ -410,8 +405,7 @@ class IBMBackend(Backend):
             return BackendStatus.from_dict(api_status)
         except TypeError as ex:
             raise IBMBackendApiProtocolError(
-                "Unexpected return value received from the server when "
-                "getting backend status: {}".format(str(ex))
+                f"Unexpected return value received from the server when getting backend status: {str(ex)}"
             ) from ex
 
     def defaults(self, refresh: bool = False) -> Optional[PulseDefaults]:
@@ -429,8 +423,7 @@ class IBMBackend(Backend):
             The backend pulse defaults or ``None`` if the backend does not support pulse.
         """
         if refresh or self._defaults is None:
-            api_defaults = self._api_client.backend_pulse_defaults(self.name)
-            if api_defaults:
+            if api_defaults := self._api_client.backend_pulse_defaults(self.name):
                 self._defaults = defaults_from_server_data(api_defaults)
             else:
                 self._defaults = None
@@ -494,7 +487,7 @@ class IBMBackend(Backend):
         return self._configuration.control(qubits=qubits)
 
     def __repr__(self) -> str:
-        return "<{}('{}')>".format(self.__class__.__name__, self.name)
+        return f"<{self.__class__.__name__}('{self.name}')>"
 
     def __call__(self) -> "IBMBackend":
         # For backward compatibility only, can be removed later.

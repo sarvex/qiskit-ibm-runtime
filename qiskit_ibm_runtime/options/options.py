@@ -125,8 +125,7 @@ class Options:
             Inputs acceptable by primitives.
         """
         sim_options = options.get("simulator", {})
-        inputs = {}
-        inputs["transpilation_settings"] = options.get("transpilation", {})
+        inputs = {"transpilation_settings": options.get("transpilation", {})}
         inputs["transpilation_settings"].update(
             {
                 "optimization_settings": {"level": options.get("optimization_level")},
@@ -162,7 +161,7 @@ class Options:
         known_keys = list(Options.__dataclass_fields__.keys())
         known_keys.append("image")
         # Add additional unknown keys.
-        for key in options.keys():
+        for key in options:
             if key not in known_keys:
                 warnings.warn(
                     f"Key '{key}' is an unrecognized option. It may be ignored."
@@ -177,7 +176,7 @@ class Options:
             ValueError: if optimization_level is outside the allowed range.
             ValueError: if max_execution_time is outside the allowed range.
         """
-        if not options.get("optimization_level") in list(
+        if options.get("optimization_level") not in list(
             range(Options._MAX_OPTIMIZATION_LEVEL + 1)
         ):
             raise ValueError(
@@ -189,7 +188,7 @@ class Options:
             options.get("transpilation")
         )
         execution_time = options.get("max_execution_time")
-        if not execution_time is None:
+        if execution_time is not None:
             if (
                 execution_time < Options._MIN_EXECUTION_TIME
                 or execution_time > Options._MAX_EXECUTION_TIME
@@ -232,8 +231,8 @@ class Options:
         """
 
         def _update_options(
-            old: dict, new: dict, matched: Optional[dict] = None
-        ) -> None:
+                old: dict, new: dict, matched: Optional[dict] = None
+            ) -> None:
             if not new and not matched:
                 return
             matched = matched or {}
@@ -242,7 +241,7 @@ class Options:
                 if isinstance(val, dict):
                     matched = new.pop(key, {})
                     _update_options(val, new, matched)
-                elif key in new.keys():
+                elif key in new:
                     old[key] = new.pop(key)
                 elif key in matched.keys():
                     old[key] = matched.pop(key)

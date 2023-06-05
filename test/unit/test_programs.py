@@ -42,9 +42,7 @@ class TestPrograms(IBMTestCase):
     @run_quantum_and_cloud_fake
     def test_list_programs_with_limit_skip(self, service):
         """Test listing programs with limit and skip."""
-        program_ids = []
-        for _ in range(3):
-            program_ids.append(upload_program(service))
+        program_ids = [upload_program(service) for _ in range(3)]
         programs = service.programs(limit=2, skip=1)
         all_ids = [prog.program_id for prog in programs]
         self.assertNotIn(program_ids[0], all_ids)
@@ -64,10 +62,7 @@ class TestPrograms(IBMTestCase):
     @run_quantum_and_cloud_fake
     def test_print_programs(self, service):
         """Test printing programs."""
-        ids = []
-        for idx in range(3):
-            ids.append(upload_program(service, name=f"name_{idx}"))
-
+        ids = [upload_program(service, name=f"name_{idx}") for idx in range(3)]
         programs = service.programs()
         with patch("sys.stdout", new=StringIO()) as mock_stdout:
             service.pprint_programs()

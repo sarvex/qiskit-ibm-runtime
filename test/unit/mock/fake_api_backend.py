@@ -54,6 +54,4 @@ class FakeApiBackend:
 
     def has_access(self, hgp):
         """Check if hgp is accessible"""
-        if not self.hgps:
-            return True
-        return hgp in self.hgps
+        return True if not self.hgps else hgp in self.hgps

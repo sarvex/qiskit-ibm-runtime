@@ -42,12 +42,14 @@ class BaseFakeAuthClient:
     def user_hubs(self) -> List[Dict[str, str]]:
         """Retrieve the hub/group/project sets available to the user."""
 
-        hubs = []
-        for idx in range(2):
-            hubs.append(
-                {"hub": f"hub{idx}", "group": f"group{idx}", "project": f"project{idx}"}
-            )
-        return hubs
+        return [
+            {
+                "hub": f"hub{idx}",
+                "group": f"group{idx}",
+                "project": f"project{idx}",
+            }
+            for idx in range(2)
+        ]
 
     def api_version(self) -> Dict[str, Union[str, bool]]:
         """Return the version of the API.

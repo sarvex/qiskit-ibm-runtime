@@ -160,7 +160,7 @@ class Account:
     @staticmethod
     def _assert_valid_channel(channel: ChannelType) -> None:
         """Assert that the channel parameter is valid."""
-        if not (channel in ["ibm_cloud", "ibm_quantum"]):
+        if channel not in ["ibm_cloud", "ibm_quantum"]:
             raise InvalidAccountError(
                 f"Invalid `channel` value. Expected one of "
                 f"{['ibm_cloud', 'ibm_quantum']}, got '{channel}'."
@@ -169,7 +169,7 @@ class Account:
     @staticmethod
     def _assert_valid_token(token: str) -> None:
         """Assert that the token is valid."""
-        if not (isinstance(token, str) and len(token) > 0):
+        if not isinstance(token, str) or not token:
             raise InvalidAccountError(
                 f"Invalid `token` value. Expected a non-empty string, got '{token}'."
             )
@@ -194,7 +194,7 @@ class Account:
     def _assert_valid_instance(channel: ChannelType, instance: str) -> None:
         """Assert that the instance name is valid for the given account type."""
         if channel == "ibm_cloud":
-            if not (isinstance(instance, str) and len(instance) > 0):
+            if not isinstance(instance, str) or not instance:
                 raise InvalidAccountError(
                     f"Invalid `instance` value. Expected a non-empty string, got '{instance}'."
                 )

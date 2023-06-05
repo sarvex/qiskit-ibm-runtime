@@ -40,9 +40,7 @@ def setup_test_logging(logger: logging.Logger, filename: str) -> None:
         filename: Name of the output file, if log to file is enabled.
     """
     # Set up formatter.
-    log_fmt = "{}.%(funcName)s:%(levelname)s:%(asctime)s:" " %(message)s".format(
-        logger.name
-    )
+    log_fmt = f"{logger.name}.%(funcName)s:%(levelname)s:%(asctime)s: %(message)s"
     formatter = logging.Formatter(log_fmt)
 
     if os.getenv("STREAM_LOG", "true").lower() == "true":
@@ -112,9 +110,7 @@ def cancel_job_safe(job: RuntimeJob, logger: logging.Logger) -> bool:
         status = job.status()
         assert (
             status is JobStatus.CANCELLED
-        ), "cancel() was successful for job {} but its " "status is {}.".format(
-            job.job_id(), status
-        )
+        ), f"cancel() was successful for job {job.job_id()} but its status is {status}."
         return True
     except RuntimeInvalidStateError:
         if job.status() in JOB_FINAL_STATES:

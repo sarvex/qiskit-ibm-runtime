@@ -37,8 +37,7 @@ def utc_to_local(utc_dt: Union[datetime, str]) -> datetime:
     if not isinstance(utc_dt, datetime):
         raise TypeError("Input `utc_dt` is not string or datetime.")
     utc_dt = utc_dt.replace(tzinfo=timezone.utc)  # type: ignore[arg-type]
-    local_dt = utc_dt.astimezone(tz.tzlocal())  # type: ignore[attr-defined]
-    return local_dt
+    return utc_dt.astimezone(tz.tzlocal())
 
 
 def local_to_utc(local_dt: Union[datetime, str]) -> datetime:
@@ -99,13 +98,13 @@ def seconds_to_duration(seconds: float) -> Tuple[int, int, int, int, int]:
     days = int(seconds // (3600 * 24))
     hours = int((seconds // 3600) % 24)
     minutes = int((seconds // 60) % 60)
-    seconds = seconds % 60
+    seconds %= 60
     millisec = 0
     if seconds < 1:
         millisec = int(ceil(seconds * 1000))
         seconds = 0
     else:
-        seconds = int(seconds)
+        seconds = seconds
     return days, hours, minutes, seconds, millisec
 
 
@@ -124,16 +123,16 @@ def duration_difference(date_time: datetime) -> str:
     # days, hours, minutes, seconds, and milliseconds.
     time_str = ""
     if time_tuple[0]:
-        time_str += "{} days".format(time_tuple[0])
-        time_str += " {} hrs".format(time_tuple[1])
+        time_str += f"{time_tuple[0]} days"
+        time_str += f" {time_tuple[1]} hrs"
     elif time_tuple[1]:
-        time_str += "{} hrs".format(time_tuple[1])
-        time_str += " {} min".format(time_tuple[2])
+        time_str += f"{time_tuple[1]} hrs"
+        time_str += f" {time_tuple[2]} min"
     elif time_tuple[2]:
-        time_str += "{} min".format(time_tuple[2])
-        time_str += " {} sec".format(time_tuple[3])
+        time_str += f"{time_tuple[2]} min"
+        time_str += f" {time_tuple[3]} sec"
     elif time_tuple[3]:
-        time_str += "{} sec".format(time_tuple[3])
+        time_str += f"{time_tuple[3]} sec"
     return time_str
 
 

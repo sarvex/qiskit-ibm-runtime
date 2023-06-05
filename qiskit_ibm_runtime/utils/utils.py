@@ -68,20 +68,22 @@ def resolve_crn(channel: str, url: str, instance: str, token: str) -> List[str]:
     if is_crn(instance):
         # no need to resolve CRN value by name
         return [instance]
-    else:
-        with requests.Session() as session:
-            # resolve CRN value based on the provided service name
-            authenticator = IAMAuthenticator(token, url=get_iam_api_url(url))
-            client = ResourceControllerV2(authenticator=authenticator)
-            client.set_service_url(get_resource_controller_api_url(url))
-            client.set_http_client(session)
-            list_response = client.list_resource_instances(name=instance)
-            result = list_response.get_result()
-            row_count = result["rows_count"]
-            if row_count == 0:
-                return []
-            else:
-                return list(map(lambda resource: resource["crn"], result["resources"]))
+    with requests.Session() as session:
+        # resolve CRN value based on the provided service name
+        authenticator = IAMAuthenticator(token, url=get_iam_api_url(url))
+        client = ResourceControllerV2(authenticator=authenticator)
+        client.set_service_url(get_resource_controller_api_url(url))
+        client.set_http_client(session)
+        list_response = client.list_resource_instances(name=instance)
+        result = list_response.get_result()
+        row_count = result["rows_count"]
+        return (
+            []
+            if row_count == 0
+            else list(
+                map(lambda resource: resource["crn"], result["resources"])
+            )
+        )
 
 
 def is_crn(locator: str) -> bool:
@@ -141,7 +143,7 @@ def _location_from_crn(crn: str) -> str:
         The location.
     """
     pattern = "(.*?):(.*?):(.*?):(.*?):(.*?):(.*?):.*"
-    return re.search(pattern, crn).group(6)
+    return re.search(pattern, crn)[6]
 
 
 def to_python_identifier(name: str) -> str:

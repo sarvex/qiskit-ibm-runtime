@@ -69,7 +69,10 @@ class TranspilationOptions:
             ValueError: if approximation_degree in not None or in the range 0.0 to 1.0.
         """
         layout_method = transpilation_options.get("layout_method")
-        if not (layout_method in get_args(LayoutMethodType) or layout_method is None):
+        if (
+            layout_method not in get_args(LayoutMethodType)
+            and layout_method is not None
+        ):
             raise ValueError(
                 f"Unsupported value {layout_method} for layout_method. "
                 f"Supported values are {get_args(LayoutMethodType)} and None"

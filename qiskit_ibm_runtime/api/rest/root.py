@@ -86,9 +86,7 @@ class Api(RestAdapterBase):
             JSON response of user information.
         """
         url = self.get_url("user_info")
-        response = self.session.get(url).json()
-
-        return response
+        return self.session.get(url).json()
 
     def reservations(self) -> List:
         """Return reservation information.

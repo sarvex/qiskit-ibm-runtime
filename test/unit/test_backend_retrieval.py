@@ -36,10 +36,7 @@ class TestBackendFilters(IBMTestCase):
     @run_quantum_and_cloud_fake
     def test_filter_by_name(self, service):
         """Test filtering by name."""
-        for name in [
-            FakeRuntimeService.DEFAULT_COMMON_BACKEND,
-            FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX + "0",
-        ]:
+        for name in [FakeRuntimeService.DEFAULT_COMMON_BACKEND, f"{FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX}0"]:
             with self.subTest(name=name):
                 backend_name = [back.name for back in service.backends(name=name)]
                 self.assertEqual(len(backend_name), 1)
@@ -218,14 +215,14 @@ class TestGetBackend(IBMTestCase):
     def test_get_unique_backend_default_hgp(self):
         """Test getting a backend in the default hgp."""
         service = FakeRuntimeService(channel="ibm_quantum", token="my_token")
-        backend_name = FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX + "0"
+        backend_name = f"{FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX}0"
         backend = service.backend(backend_name)
         self.assertEqual(backend._instance, list(service._hgps.keys())[0])
 
     def test_get_unique_backend_non_default_hgp(self):
         """Test getting a backend in the non default hgp."""
         service = FakeRuntimeService(channel="ibm_quantum", token="my_token")
-        backend_name = FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX + "1"
+        backend_name = f"{FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX}1"
         backend = service.backend(backend_name)
         self.assertEqual(backend._instance, list(service._hgps.keys())[1])
 
@@ -246,7 +243,7 @@ class TestGetBackend(IBMTestCase):
     def test_get_backend_by_bad_hgp(self):
         """Test getting a backend not in hgp."""
         hgp = FakeRuntimeService.DEFAULT_HGPS[1]
-        backend_name = FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX + "0"
+        backend_name = f"{FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX}0"
         service = FakeRuntimeService(channel="ibm_quantum", token="my_token")
         with self.assertRaises(QiskitBackendNotFoundError):
             _ = service.backend(backend_name, instance=hgp)
