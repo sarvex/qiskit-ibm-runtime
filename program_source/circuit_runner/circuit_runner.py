@@ -61,8 +61,4 @@ def main(
     # Compute raw results
     result = backend.run(circuits, **kwargs).result()
 
-    if measurement_error_mitigation:
-        # Performs measurement error mitigation.
-        pass
-
     return result.to_dict()

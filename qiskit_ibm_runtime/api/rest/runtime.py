@@ -248,7 +248,7 @@ class Runtime(RestAdapterBase):
             payload["created_after"] = local_to_utc(created_after).isoformat()
         if created_before:
             payload["created_before"] = local_to_utc(created_before).isoformat()
-        if descending is False:
+        if not descending:
             payload["sort"] = "ASC"
         if all([hub, group, project]):
             payload["provider"] = f"{hub}/{group}/{project}"

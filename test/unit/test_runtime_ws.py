@@ -235,7 +235,7 @@ class TestRuntimeWebsocketClient(IBMTestCase):
             channel="ibm_quantum", token="my_token", url=MockWsServer.VALID_WS_URL
         )
         backend = backend or FakeQasmSimulator()
-        job = RuntimeJob(
+        return RuntimeJob(
             backend=backend,
             api_client=BaseFakeRuntimeClient(),
             client_params=params,
@@ -244,4 +244,3 @@ class TestRuntimeWebsocketClient(IBMTestCase):
             program_id="my-program",
             user_callback=callback,
         )
-        return job

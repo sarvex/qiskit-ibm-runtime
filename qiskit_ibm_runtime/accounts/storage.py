@@ -63,9 +63,7 @@ def read_config(
         data = json.load(json_file)
         if name is None:
             return data
-        if name in data:
-            return data[name]
-        return None
+        return data[name] if name in data else None
 
 
 def delete_config(

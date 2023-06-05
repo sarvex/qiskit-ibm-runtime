@@ -69,13 +69,13 @@ class ResilienceOptions:
             ValueError: if extrapolator == "CubicExtrapolator" and number of noise_factors < 4.
         """
         noise_amplifier = resilience_options.get("noise_amplifier")
-        if not noise_amplifier in get_args(NoiseAmplifierType):
+        if noise_amplifier not in get_args(NoiseAmplifierType):
             raise ValueError(
                 f"Unsupported value {noise_amplifier} for noise_amplifier. "
                 f"Supported values are {get_args(NoiseAmplifierType)}"
             )
         extrapolator = resilience_options.get("extrapolator")
-        if not extrapolator in get_args(ExtrapolatorType):
+        if extrapolator not in get_args(ExtrapolatorType):
             raise ValueError(
                 f"Unsupported value {extrapolator} for extrapolator. "
                 f"Supported values are {get_args(ExtrapolatorType)}"

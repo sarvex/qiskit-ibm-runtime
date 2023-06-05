@@ -457,12 +457,10 @@ class _SPSA(Optimizer):
                 self.grad_params + self.hessian_params,
                 [theta_p_, theta_m_, x_pp_, x_pm_, x_mp_, x_mm_, y_],
             ):
-                values_dict.update(
-                    {
-                        params[i]: value_matrix[:, i].tolist()
-                        for i in range(num_parameters)
-                    }
-                )
+                values_dict |= {
+                    params[i]: value_matrix[:, i].tolist()
+                    for i in range(num_parameters)
+                }
         else:
             for params, value_matrix in zip(self.grad_params, [theta_p_, theta_m_]):
                 values_dict.update(
@@ -1092,8 +1090,7 @@ class Publisher:
 
     def callback(self, *args, **kwargs):
         text = list(args)
-        for k, v in kwargs.items():
-            text.append({k: v})
+        text.extend({k: v} for k, v in kwargs.items())
         self._messenger.publish(text)
 
 
@@ -1143,10 +1140,9 @@ def main(backend, user_messenger, **kwargs):
     optimizer = _parse_optimizer(kwargs)
 
     shots = kwargs.get("shots", 1024)
-    measurement_error_mitigation = kwargs.get("measurement_error_mitigation", False)
-
-    # set up quantum instance
-    if measurement_error_mitigation:
+    if measurement_error_mitigation := kwargs.get(
+        "measurement_error_mitigation", False
+    ):
         _quantum_instance = QuantumInstance(
             backend,
             shots=shots,

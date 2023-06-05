@@ -49,8 +49,7 @@ class TestIntegrationBackend(IBMIntegrationTestCase):
         backend_names = [backend.name for backend in backends]
 
         for config in configs.values():
-            backend = service._create_backend_obj(config, instance=instance)
-            if backend:
+            if backend := service._create_backend_obj(config, instance=instance):
                 self.assertTrue(backend.name in backend_names)
 
     @run_integration_test

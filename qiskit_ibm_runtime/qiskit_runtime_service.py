@@ -242,13 +242,12 @@ class QiskitRuntimeService(Provider):
                         filename,
                         name,
                     )
-            else:
-                if any([auth, channel, token, url]):
-                    logger.warning(
-                        "Loading account with name %s. Any input 'auth', "
-                        "'channel', 'token' or 'url' are ignored.",
-                        name,
-                    )
+            elif any([auth, channel, token, url]):
+                logger.warning(
+                    "Loading account with name %s. Any input 'auth', "
+                    "'channel', 'token' or 'url' are ignored.",
+                    name,
+                )
             account = AccountManager.get(filename=filename, name=name)
         elif auth or channel:
             if auth and auth not in ["legacy", "cloud"]:
@@ -310,16 +309,14 @@ class QiskitRuntimeService(Provider):
             raw_config = self._api_client.backend_configuration(
                 backend_name=backend_name
             )
-            config = configuration_from_server_data(
+            if config := configuration_from_server_data(
                 raw_config=raw_config, instance=self._account.instance
-            )
-            if not config:
-                continue
-            ret[config.backend_name] = ibm_backend.IBMBackend(
-                configuration=config,
-                service=self,
-                api_client=self._api_client,
-            )
+            ):
+                ret[config.backend_name] = ibm_backend.IBMBackend(
+                    configuration=config,
+                    service=self,
+                    api_client=self._api_client,
+                )
         return ret
 
     def _resolve_crn(self, account: Account) -> None:
@@ -344,10 +341,7 @@ class QiskitRuntimeService(Provider):
         # Check the URL is a valid authentication URL.
         if not version_info["new_api"] or "api-auth" not in version_info:
             raise IBMInputValueError(
-                "The URL specified ({}) is not an IBM Quantum authentication URL. "
-                "Valid authentication URL: {}.".format(
-                    client_params.url, QISKIT_IBM_RUNTIME_API_URL
-                )
+                f"The URL specified ({client_params.url}) is not an IBM Quantum authentication URL. Valid authentication URL: {QISKIT_IBM_RUNTIME_API_URL}."
             )
         auth_client = AuthClient(client_params)
         service_urls = auth_client.current_service_urls()
@@ -413,8 +407,7 @@ class QiskitRuntimeService(Provider):
             open_key, open_val = hgps.popitem(last=False)
             hgps[open_key] = open_val
 
-        default_hgp = self._account.instance
-        if default_hgp:
+        if default_hgp := self._account.instance:
             if default_hgp in hgps:
                 # Move user selected hgp to front of the list
                 hgps.move_to_end(default_hgp, last=False)
@@ -586,11 +579,11 @@ class QiskitRuntimeService(Provider):
                         )
                     backends.append(self._backends[backend_name])
 
+        elif instance:
+            raise IBMInputValueError(
+                "The 'instance' keyword is only supported for ``ibm_quantum`` runtime."
+            )
         else:
-            if instance:
-                raise IBMInputValueError(
-                    "The 'instance' keyword is only supported for ``ibm_quantum`` runtime."
-                )
             backends = list(self._backends.values())
 
         if name:
@@ -684,9 +677,7 @@ class QiskitRuntimeService(Provider):
     @staticmethod
     def _get_channel_for_auth(auth: str) -> str:
         """Returns channel type based on auth"""
-        if auth == "legacy":
-            return "ibm_quantum"
-        return "ibm_cloud"
+        return "ibm_quantum" if auth == "legacy" else "ibm_cloud"
 
     @staticmethod
     def save_account(
@@ -792,7 +783,7 @@ class QiskitRuntimeService(Provider):
                     "https://cloud.ibm.com/docs/quantum-computing?topic=quantum-computing-choose-backend "
                 )
             raise QiskitBackendNotFoundError(
-                "No backend matches the criteria." + cloud_msg_url
+                f"No backend matches the criteria.{cloud_msg_url}"
             )
         return backends[0]
 
@@ -820,7 +811,7 @@ class QiskitRuntimeService(Provider):
         for prog in programs:
             print("=" * 50)
             if detailed:
-                print(str(prog))
+                print(prog)
             else:
                 print(
                     f"{prog.program_id}:",
@@ -1028,7 +1019,7 @@ class QiskitRuntimeService(Provider):
 
         backend = self.backend(name=response["backend"], instance=hgp_name)
 
-        job = RuntimeJob(
+        return RuntimeJob(
             backend=backend,
             api_client=self._api_client,
             client_params=self._client_params,
@@ -1040,7 +1031,6 @@ class QiskitRuntimeService(Provider):
             image=qrt_options.image,
             service=self,
         )
-        return job
 
     def upload_program(
         self, data: str, metadata: Optional[Union[Dict, str]] = None
@@ -1446,10 +1436,7 @@ class QiskitRuntimeService(Provider):
 
         params = raw_data.get("params", {})
         if isinstance(params, list):
-            if len(params) > 0:
-                params = params[0]
-            else:
-                params = {}
+            params = params[0] if len(params) > 0 else {}
         if not isinstance(params, str):
             params = json.dumps(params)
 
@@ -1532,4 +1519,4 @@ class QiskitRuntimeService(Provider):
         return self
 
     def __repr__(self) -> str:
-        return "<{}>".format(self.__class__.__name__)
+        return f"<{self.__class__.__name__}>"

@@ -141,7 +141,7 @@ class RuntimeProgram:
 
         def camel_to_sentence_case(camel_case_text: str) -> str:
             """Converts camelCase to Sentence case"""
-            if camel_case_text == "":
+            if not camel_case_text:
                 return camel_case_text
             sentence_case_text = re.sub("([A-Z])", r" \1", camel_case_text)
             return sentence_case_text[:1].upper() + sentence_case_text[1:].lower()
@@ -317,10 +317,10 @@ class RuntimeProgram:
         """
         if not self._data:
             self._refresh()
-            if not self._data:
-                raise IBMNotAuthorizedError(
-                    "Only program authors are authorized to retrieve program data"
-                )
+        if not self._data:
+            raise IBMNotAuthorizedError(
+                "Only program authors are authorized to retrieve program data"
+            )
         return self._data
 
     def _refresh(self) -> None:
@@ -409,9 +409,7 @@ class ParameterNamespace(SimpleNamespace):
             value = getattr(self, parameter_name, None)
             # Check there exists a program parameter of that name.
             if value is None and parameter_name in self.metadata.get("required", []):
-                raise IBMInputValueError(
-                    "Param (%s) missing required value!" % parameter_name
-                )
+                raise IBMInputValueError(f"Param ({parameter_name}) missing required value!")
 
     def __str__(self) -> str:
         """Creates string representation of object"""

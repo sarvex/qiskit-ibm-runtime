@@ -81,11 +81,7 @@ class TestIntegrationProgram(IBMIntegrationTestCase):
     def test_retrieve_unauthorized_program_data(self, service):
         """Test retrieving program data when user is not the program author"""
         programs = service.programs()
-        not_mine = None
-        for prog in programs:
-            if prog.is_public:
-                not_mine = prog
-                break
+        not_mine = next((prog for prog in programs if prog.is_public), None)
         if not_mine is None:
             self.skipTest("Cannot find a program that's not mine!")
         with self.assertRaises(IBMNotAuthorizedError):

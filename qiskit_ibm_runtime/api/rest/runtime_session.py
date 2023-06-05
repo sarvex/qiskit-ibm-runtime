@@ -34,7 +34,7 @@ class RuntimeSession(RestAdapterBase):
             session_id: Job ID of the first job in a runtime session.
             url_prefix: Prefix to use in the URL.
         """
-        super().__init__(session, "{}/sessions/{}".format(url_prefix, session_id))
+        super().__init__(session, f"{url_prefix}/sessions/{session_id}")
 
     def close(self) -> None:
         """Close this session."""

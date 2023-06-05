@@ -150,13 +150,13 @@ class AccountManager:
         filename = os.path.expanduser(filename)
         cls.migrate(filename)
         if name:
-            saved_account = read_config(filename=filename, name=name)
-            if not saved_account:
+            if saved_account := read_config(filename=filename, name=name):
+                return Account.from_saved_format(saved_account)
+
+            else:
                 raise AccountNotFoundError(
                     f"Account with the name {name} does not exist on disk."
                 )
-            return Account.from_saved_format(saved_account)
-
         channel_ = channel or os.getenv("QISKIT_IBM_CHANNEL") or _DEFAULT_CHANNEL_TYPE
         env_account = cls._from_env_variables(channel_)
         if env_account is not None:
@@ -228,19 +228,18 @@ class AccountManager:
                     config=value,
                     overwrite=False,
                 )
-            else:
-                if isinstance(value, dict) and "auth" in value:
-                    if value["auth"] == "cloud":
-                        value.update(channel="ibm_cloud")
-                    elif value["auth"] == "legacy":
-                        value.update(channel="ibm_quantum")
-                    value.pop("auth", None)
-                    save_config(
-                        filename=filename,
-                        name=key,
-                        config=value,
-                        overwrite=True,
-                    )
+            elif isinstance(value, dict) and "auth" in value:
+                if value["auth"] == "cloud":
+                    value.update(channel="ibm_cloud")
+                elif value["auth"] == "legacy":
+                    value.update(channel="ibm_quantum")
+                value.pop("auth", None)
+                save_config(
+                    filename=filename,
+                    name=key,
+                    config=value,
+                    overwrite=True,
+                )
 
     @classmethod
     def _from_env_variables(cls, channel: Optional[ChannelType]) -> Optional[Account]:

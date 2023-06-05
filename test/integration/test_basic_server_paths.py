@@ -47,8 +47,7 @@ class TestBasicServerPaths(IBMTestCase):
                 )
                 if not pulse_backends:
                     raise self.skipTest(
-                        "Skipping pulse test since no pulse backend "
-                        'found for "{}"'.format(hgp)
+                        f'Skipping pulse test since no pulse backend found for "{hgp}"'
                     )
 
                 self.assertIsNotNone(pulse_backends[0].properties())

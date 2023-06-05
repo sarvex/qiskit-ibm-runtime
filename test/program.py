@@ -65,8 +65,7 @@ def upload_program(
     metadata.update(name=name)
     metadata.update(is_public=is_public)
     metadata.update(max_execution_time=max_execution_time)
-    program_id = service.upload_program(data=data, metadata=metadata)
-    return program_id
+    return service.upload_program(data=data, metadata=metadata)
 
 
 def run_program(

@@ -100,7 +100,7 @@ class TestRuntimeJob(IBMTestCase):
     def test_run_program_non_default_hgp_backend(self):
         """Test running a program with a backend in non-default hgp."""
         service = FakeRuntimeService(channel="ibm_quantum", token="my_token")
-        backend = FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX + "1"
+        backend = f"{FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX}1"
         default_hgp = list(service._hgps.values())[0]
         self.assertNotIn(backend, default_hgp.backends)
         job = run_program(service=service, backend_name=backend)
@@ -120,7 +120,7 @@ class TestRuntimeJob(IBMTestCase):
     def test_run_program_by_hgp_bad_backend(self):
         """Test running a program with backend not in hgp."""
         service = FakeRuntimeService(channel="ibm_quantum", token="my_token")
-        backend = FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX + "1"
+        backend = f"{FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX}1"
         default_hgp = list(service._hgps.values())[0]
         self.assertNotIn(backend, default_hgp.backends)
         with self.assertRaises(QiskitBackendNotFoundError):

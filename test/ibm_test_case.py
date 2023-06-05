@@ -41,7 +41,7 @@ class IBMTestCase(unittest.TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.log = logging.getLogger(cls.__name__)
-        filename = "%s.log" % os.path.splitext(inspect.getfile(cls))[0]
+        filename = f"{os.path.splitext(inspect.getfile(cls))[0]}.log"
         setup_test_logging(cls.log, filename)
         cls._set_logging_level(logging.getLogger(QISKIT_IBM_RUNTIME_LOGGER_NAME))
 
@@ -133,10 +133,9 @@ class IBMIntegrationJobTestCase(IBMIntegrationTestCase):
         # pylint: disable=arguments-differ
         # pylint: disable=no-value-for-parameter
         super().setUpClass()
-        cls.program_ids = {}
         cls.sim_backends = {}
         service = cls.service
-        cls.program_ids[service.channel] = "hello-world"
+        cls.program_ids = {service.channel: "hello-world"}
         cls._find_sim_backends()
 
     @classmethod

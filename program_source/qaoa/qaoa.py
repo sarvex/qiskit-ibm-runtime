@@ -70,8 +70,7 @@ class Publisher:
 
     def callback(self, *args, **kwargs):
         text = list(args)
-        for k, v in kwargs.items():
-            text.append({k: v})
+        text.extend({k: v} for k, v in kwargs.items())
         self._messenger.publish(text)
 
 
@@ -144,10 +143,7 @@ class QAOAAnsatz(EvolvedOperatorAnsatz):
             valid = False
             if raise_on_failure:
                 raise ValueError(
-                    "The number of qubits of the initial state {} does not match "
-                    "the number of qubits of the cost operator {}".format(
-                        self.initial_state.num_qubits, self.num_qubits
-                    )
+                    f"The number of qubits of the initial state {self.initial_state.num_qubits} does not match the number of qubits of the cost operator {self.num_qubits}"
                 )
 
         if (
@@ -157,10 +153,7 @@ class QAOAAnsatz(EvolvedOperatorAnsatz):
             valid = False
             if raise_on_failure:
                 raise ValueError(
-                    "The number of qubits of the mixer {} does not match "
-                    "the number of qubits of the cost operator {}".format(
-                        self.mixer_operator.num_qubits, self.num_qubits
-                    )
+                    f"The number of qubits of the mixer {self.mixer_operator.num_qubits} does not match the number of qubits of the cost operator {self.num_qubits}"
                 )
 
         return valid
@@ -391,11 +384,10 @@ class QAOAGate(Gate):
 
         if initial_state is None:
             initial_state = _get_default_initial_state(cost_operator)
-        else:
-            if initial_state.num_qubits != cost_operator.num_qubits:
-                raise AttributeError(
-                    "initial_state and cost_operator has incompatible number of qubits"
-                )
+        elif initial_state.num_qubits != cost_operator.num_qubits:
+            raise AttributeError(
+                "initial_state and cost_operator has incompatible number of qubits"
+            )
 
         if mixer_operator is None:
             mixer_operator = _get_default_mixer(cost_operator)
@@ -539,10 +531,7 @@ def _active_qubits(operator):
     # use numpy act a logical and on each index across the Pauli strings
     idle_qubits = np.all(np.array(is_identity), axis=0)
 
-    # return the indices of the qubits that are not idle
-    active_indices = [index for index, idle in enumerate(idle_qubits) if not idle]
-
-    return active_indices
+    return [index for index, idle in enumerate(idle_qubits) if not idle]
 
 
 # end QAOA gate
@@ -723,15 +712,14 @@ class SwapStrategy:
             ]
             permuted_swap_layers.append(permuted_swap_layer)
 
-        if inplace:
-            self.coupling_map = permuted_coupling_map
-            self.swap_layers = permuted_swap_layers
-        else:
+        if not inplace:
             return SwapStrategy(
                 coupling_map=permuted_coupling_map,
                 swap_layers=permuted_swap_layers,
                 edge_coloring=self.edge_coloring,
             )
+        self.coupling_map = permuted_coupling_map
+        self.swap_layers = permuted_swap_layers
 
     def new_connections(self, idx: int) -> List[Set]:
         """
@@ -747,10 +735,9 @@ class SwapStrategy:
         """
         connections = []
         for i in range(self.num_vertices):
-            for j in range(i):
-                if self.distance_matrix[i][j] == idx:
-                    connections.append({i, j})
-
+            connections.extend(
+                {i, j} for j in range(i) if self.distance_matrix[i][j] == idx
+            )
         return connections
 
     def missing_couplings(self) -> Set[Tuple[int, int]]:
@@ -948,12 +935,10 @@ class SwapStrategy:
         if vertex_mapping is None:
             vertex_mapping = {i: i for i in range(self.num_vertices)}
 
-        swap_layers = []
-        for swap_layer in self.swap_layers:
-            swap_layers.append(
-                [(vertex_mapping[i], vertex_mapping[j]) for (i, j) in swap_layer]
-            )
-
+        swap_layers = [
+            [(vertex_mapping[i], vertex_mapping[j]) for (i, j) in swap_layer]
+            for swap_layer in self.swap_layers
+        ]
         if retain_edge_coloring and self.edge_coloring is not None:
             edge_coloring = {
                 (vertex_mapping[i], vertex_mapping[j]): self.edge_coloring[(i, j)]
@@ -1000,15 +985,10 @@ class LineSwapStrategy(SwapStrategy):
 
         base_layers = [swap_layer0, swap_layer1]
 
-        swap_layers = []
-        for i in range(num_swap_layers):
-            swap_layers.append(base_layers[i % 2])
-
+        swap_layers = [base_layers[i % 2] for i in range(num_swap_layers)]
         couplings = []
         for idx in range(len(line) - 1):
-            couplings.append((line[idx], line[idx + 1]))
-            couplings.append((line[idx + 1], line[idx]))
-
+            couplings.extend(((line[idx], line[idx + 1]), (line[idx + 1], line[idx])))
         super().__init__(
             coupling_map=CouplingMap(couplings),
             swap_layers=swap_layers,
@@ -1286,11 +1266,9 @@ class DoubleRingSwapStrategy(SwapStrategy):
         """Make the coupling map that we will use."""
 
         # Add the extra edges to a copy of the longest line coupling map.
-        coupling_map = [edge for edge in self._longest_line_map]
+        coupling_map = list(self._longest_line_map)
         for qubit in self._qubits_to_add[n_qubits]:
-            for edge in self._dangling_qubits_edges[qubit]:
-                coupling_map.append(edge)
-
+            coupling_map.extend(iter(self._dangling_qubits_edges[qubit]))
         # The coupling map has been defined on the physical qubits for clarity
         # however the swap strategy works with virtual qubits so we remap to virtual
         virtual_map = []
@@ -1317,26 +1295,26 @@ def get_swap_strategy(
         element is the list of physical qubits that the swap strategy applies to.
     """
 
-    if backend_name in [
+    if backend_name in {
         "ibmq_belem",
         "ibmq_quito",
         "ibmq_lime",
         "fake_belem",
         "fake_quito",
         "fake_lime",
-    ]:
+    }:
         return FiveQubitTeeSwapStrategy(), list(range(5))
 
-    if backend_name in [
+    if backend_name in {
         "fake_lagos",
         "ibm_lagos",
         "ibmq_casablanca",
         "ibm_nairobi",
         "ibmq_jakarta",
-    ]:
+    }:
         return SevenQubitHeavySwapStrategy(n_qubits), list(range(n_qubits))
 
-    if backend_name in ["ibmq_santiagio", "ibmq_bogota", " ibmq_manila"]:
+    if backend_name in {"ibmq_santiagio", "ibmq_bogota", " ibmq_manila"}:
         return LineSwapStrategy(list(range(5))), list(range(5))
 
     devices_27q = [
@@ -1419,10 +1397,7 @@ class HWQAOAAnsatz(QAOAAnsatz):
             Returns a Layout object representing the layout after application of the
             mapped QAOA circuit.
         """
-        if self.reps % 2 == 0:
-            return self.initial_layout
-        else:
-            return self._swapped_layout
+        return self.initial_layout if self.reps % 2 == 0 else self._swapped_layout
 
     @property
     def num_qubits(self) -> int:
@@ -1531,7 +1506,6 @@ class HWQAOAAnsatz(QAOAAnsatz):
             return False
 
         if self.swap_strategy is not None and self.cost_operator is not None:
-            # Check that circuit can be mapped to coupling map of specified SWAP strategy
             if self._num_logical_qubits > self._num_physical_qubits:
                 if raise_on_failure:
                     raise AttributeError(
@@ -1558,7 +1532,7 @@ class HWQAOAAnsatz(QAOAAnsatz):
         # 3) Convert the strings to edges.
         required_edges = set()
         for pauli_str in pauli_strings:
-            edge = tuple([i for i, p in enumerate(pauli_str[::-1]) if p != "I"])
+            edge = tuple(i for i, p in enumerate(pauli_str[::-1]) if p != "I")
 
             if len(edge) == 2:
                 required_edges.add(edge)
@@ -1628,11 +1602,11 @@ class HWQAOAAnsatz(QAOAAnsatz):
                     self.initial_layout.get_virtual_bits()[self.qubits[i]]
                 ][self.initial_layout.get_virtual_bits()[self.qubits[j]]]
 
-                if distance not in gate_layers.keys():
-                    gate_layers[distance] = {(i, j): rotation_angle}
-                else:
+                if distance in gate_layers:
                     gate_layers[distance][(i, j)] = rotation_angle
 
+                else:
+                    gate_layers[distance] = {(i, j): rotation_angle}
         max_distance = max(gate_layers.keys())
         final_permutation = self.swap_strategy.composed_permutation(idx=max_distance)
         self._swapped_layout = Layout()
@@ -1765,7 +1739,7 @@ class HWQAOAAnsatz(QAOAAnsatz):
                     remaining_gates = {}
                     blocked_vertices = set()
                     for edge, rotation_angle in rzz_layer.items():
-                        if all([j not in blocked_vertices for j in edge]):
+                        if all(j not in blocked_vertices for j in edge):
                             current_layer[edge] = rotation_angle
                             blocked_vertices = blocked_vertices.union(edge)
                         else:
@@ -1795,10 +1769,7 @@ class HWQAOAAnsatz(QAOAAnsatz):
                 # Add a swap if we are not at the end
                 if i < max_distance:
                     qaoa_cost_layer.cx(k, j)
-                    qaoa_cost_layer.cx(j, k)
-                else:
-                    qaoa_cost_layer.cx(j, k)
-
+                qaoa_cost_layer.cx(j, k)
             # Apply SWAP gates
             if i < max_distance:
                 for swap in upcoming_swaps:
@@ -1972,7 +1943,7 @@ class SwapStrategyCreator(AnalysisPass):
                         cutoff=length,
                     )
                 )
-        if len(paths) == 0:
+        if not paths:
             return None
 
         if not self._use_fidelity:
@@ -2099,7 +2070,7 @@ class InitialQubitMapper(TransformationPass):
         rotation_angles = self._map_rotation_angles(cost_op)
 
         # A mapping with the logical qubit as key and the physical qubit as value.
-        physical_mapping = dict()
+        physical_mapping = {}
 
         # The distance matrix between the qubits in the swap strategy.
         distance_mat = swap_strategy.distance_matrix
@@ -2197,10 +2168,10 @@ class InitialQubitMapper(TransformationPass):
             to the same rotation angle since the RZZGate is symmetric.
         """
 
-        rotation_angles = dict()
+        rotation_angles = {}
 
         for pauli, coeff in zip(cost_op.primitive.paulis, cost_op.primitive.coeffs):
-            indices = tuple([idx for idx, char in enumerate(pauli) if str(char) == "Z"])
+            indices = tuple(idx for idx, char in enumerate(pauli) if str(char) == "Z")
 
             rotation_angles[indices] = coeff
             rotation_angles[indices[::-1]] = coeff
@@ -2234,11 +2205,11 @@ class InitialQubitMapper(TransformationPass):
             max_qubit = 0
             for idx1, qb1 in enumerate(unmapped):
 
-                rotation_count = 0
-                for idx2, qb2 in enumerate(unmapped[idx1 + 1 :]):
-                    if (idx1, idx2) in rotation_angles:
-                        rotation_count += 1
-
+                rotation_count = sum(
+                    1
+                    for idx2, qb2 in enumerate(unmapped[idx1 + 1 :])
+                    if (idx1, idx2) in rotation_angles
+                )
                 if rotation_count > max_rotation_count:
                     max_qubit = qb1
 

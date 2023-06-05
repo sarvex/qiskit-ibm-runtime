@@ -74,10 +74,7 @@ class RuntimeSession:
     @_active_session
     def write(self, **kwargs: Dict) -> None:
         """Write to the session."""
-        if self._session_id is None:
-            inputs = copy.copy(self._initial_inputs)
-        else:
-            inputs = {}
+        inputs = copy.copy(self._initial_inputs) if self._session_id is None else {}
         inputs.update(kwargs)
         if self._session_id is None:
             self._start_session = True

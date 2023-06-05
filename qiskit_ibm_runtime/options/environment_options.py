@@ -58,7 +58,7 @@ class EnvironmentOptions:
             ValueError: if log_level is not in LogLevelType.
         """
         log_level = environment_options.get("log_level")
-        if not log_level in get_args(LogLevelType):
+        if log_level not in get_args(LogLevelType):
             raise ValueError(
                 f"Unsupported value {log_level} for log_level. "
                 f"Supported values are {get_args(LogLevelType)}"

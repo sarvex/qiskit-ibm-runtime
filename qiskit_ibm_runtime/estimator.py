@@ -253,7 +253,7 @@ class Estimator(BaseEstimator):
             combined["resilience_level"] = Options._DEFAULT_RESILIENCE_LEVEL
         logger.info("Submitting job using options %s", combined)
         self._validate_options(combined)
-        inputs.update(Options._get_program_inputs(combined))
+        inputs |= Options._get_program_inputs(combined)
 
         if backend_obj and combined["transpilation"]["skip_transpilation"]:
             for circ in circuits:
@@ -309,7 +309,7 @@ class Estimator(BaseEstimator):
         combined = Options._merge_options(self._options, run_options)
 
         self._validate_options(combined)
-        inputs.update(Options._get_program_inputs(combined))
+        inputs |= Options._get_program_inputs(combined)
 
         return self._session.run(
             program_id=self._PROGRAM_ID,
@@ -353,7 +353,7 @@ class Estimator(BaseEstimator):
         if os.getenv("QISKIT_RUNTIME_SKIP_OPTIONS_VALIDATION"):
             return
 
-        if not options.get("resilience_level") in list(
+        if options.get("resilience_level") not in list(
             range(Options._MAX_RESILIENCE_LEVEL_ESTIMATOR + 1)
         ):
             raise ValueError(

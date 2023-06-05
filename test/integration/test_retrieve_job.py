@@ -71,10 +71,7 @@ class TestIntegrationRetrieveJob(IBMIntegrationJobTestCase):
     @run_integration_test
     def test_retrieve_jobs_limit(self, service):
         """Test retrieving jobs with limit."""
-        jobs = []
-        for _ in range(3):
-            jobs.append(self._run_program(service))
-
+        jobs = [self._run_program(service) for _ in range(3)]
         rjobs = service.jobs(limit=2, program_id=self.program_ids[service.channel])
         self.assertEqual(
             len(rjobs), 2, f"Retrieved jobs: {[j.job_id() for j in rjobs]}"

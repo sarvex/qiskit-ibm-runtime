@@ -430,8 +430,7 @@ class RuntimeJob(Job):
             IBMError: If an unknown status is returned from the server.
         """
         try:
-            reason = job_response["state"].get("reason")
-            if reason:
+            if reason := job_response["state"].get("reason"):
                 self._reason = job_response["state"]["reason"].upper()
             self._status = self._status_from_job_response(job_response)
         except KeyError:
@@ -493,10 +492,7 @@ class RuntimeJob(Job):
         if self._ws_client_future is None:
             return False
 
-        if self._ws_client_future.done():
-            return False
-
-        return True
+        return not self._ws_client_future.done()
 
     def _start_websocket_client(self) -> None:
         """Start websocket client to stream results."""
@@ -606,10 +602,7 @@ class RuntimeJob(Job):
             response = self._api_client.job_get(job_id=self.job_id())
             self._creation_date = response.get("created", None)
 
-        if not self._creation_date:
-            return None
-        creation_date_local_dt = utc_to_local(self._creation_date)
-        return creation_date_local_dt
+        return None if not self._creation_date else utc_to_local(self._creation_date)
 
     @property
     def session_id(self) -> str:

@@ -45,9 +45,7 @@ class TestRetrieveJobs(IBMTestCase):
         """Test retrieving jobs without limit."""
         program_id = upload_program(service)
 
-        jobs = []
-        for _ in range(25):
-            jobs.append(run_program(service, program_id))
+        jobs = [run_program(service, program_id) for _ in range(25)]
         rjobs = service.jobs(limit=None)
         self.assertEqual(25, len(rjobs))
 
@@ -56,11 +54,8 @@ class TestRetrieveJobs(IBMTestCase):
         """Test retrieving jobs with limit."""
         program_id = upload_program(service)
 
-        jobs = []
         job_count = 25
-        for _ in range(job_count):
-            jobs.append(run_program(service, program_id))
-
+        jobs = [run_program(service, program_id) for _ in range(job_count)]
         limits = [21, 30]
         for limit in limits:
             with self.subTest(limit=limit):
@@ -72,9 +67,7 @@ class TestRetrieveJobs(IBMTestCase):
         """Test retrieving jobs with skip."""
         program_id = upload_program(service)
 
-        jobs = []
-        for _ in range(5):
-            jobs.append(run_program(service, program_id))
+        jobs = [run_program(service, program_id) for _ in range(5)]
         rjobs = service.jobs(skip=4)
         self.assertEqual(1, len(rjobs))
 
@@ -83,9 +76,7 @@ class TestRetrieveJobs(IBMTestCase):
         service = self._ibm_quantum_service
         program_id = upload_program(service)
 
-        jobs = []
-        for _ in range(10):
-            jobs.append(run_program(service, program_id))
+        jobs = [run_program(service, program_id) for _ in range(10)]
         rjobs = service.jobs(skip=4, limit=2)
         self.assertEqual(2, len(rjobs))
 
@@ -295,7 +286,7 @@ class TestRetrieveJobs(IBMTestCase):
         program_id = upload_program(service)
 
         # Run with hgp1 backend.
-        backend_name = FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX + "1"
+        backend_name = f"{FakeRuntimeService.DEFAULT_UNIQUE_BACKEND_PREFIX}1"
         job = run_program(service, program_id=program_id, backend_name=backend_name)
 
         rjob = service.job(job.job_id())

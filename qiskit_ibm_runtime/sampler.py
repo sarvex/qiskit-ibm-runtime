@@ -218,7 +218,7 @@ class Sampler(BaseSampler):
             combined["resilience_level"] = Options._DEFAULT_RESILIENCE_LEVEL
         logger.info("Submitting job using options %s", combined)
         Sampler._validate_options(combined)
-        inputs.update(Options._get_program_inputs(combined))
+        inputs |= Options._get_program_inputs(combined)
 
         if backend_obj and combined["transpilation"]["skip_transpilation"]:
             for circ in circuits:
@@ -270,15 +270,13 @@ class Sampler(BaseSampler):
         }
         combined = Options._merge_options(self._options, run_options)
         Sampler._validate_options(combined)
-        inputs.update(Options._get_program_inputs(combined))
+        inputs |= Options._get_program_inputs(combined)
 
-        raw_result = self._session.run(
+        return self._session.run(
             program_id=self._PROGRAM_ID,
             inputs=inputs,
             options=Options._get_runtime_options(combined),
         ).result()
-
-        return raw_result
 
     @property
     def session(self) -> Session:
@@ -315,7 +313,9 @@ class Sampler(BaseSampler):
         if os.getenv("QISKIT_RUNTIME_SKIP_OPTIONS_VALIDATION"):
             return
 
-        if options.get("resilience_level") and not options.get("resilience_level") in [
+        if options.get("resilience_level") and options.get(
+            "resilience_level"
+        ) not in [
             0,
             1,
         ]:
